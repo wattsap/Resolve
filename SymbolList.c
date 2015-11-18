@@ -1,0 +1,195 @@
+/*/////////////////////////////////////////////////////////////////////////////////////////////
+ * SymbolList.c
+ * Ben Crawford and Andrew Watts
+ * Version: 0.1
+ * Description: basic methods for manilpulations of a linked list of symbol entries from the
+ * nm pipe command
+ * References:
+ * - http://www.cprogramming.com/snippets/source-code/singly-linked-list-insert-remove-add-count
+ *      -used to learn basic c linked list setup
+ */////////////////////////////////////////////////////////////////////////////////////////////
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "symbolList.h"
+#include "stdbool.h"
+ //TODO: remove the comments on this
+//used for testing
+//TODO: remove this struct from the file
+
+/*
+ * these are the two fields taken from the nm pipe to get symbol name and type
+ */
+char* pulledName;
+char pulledSymbol;
+/*
+ * these are the the two roots for the two linked lists:
+ * -undefined symbols
+ * -defined symbols
+ */
+symbolEntry uRoot;
+symbolEntry dRoot;
+/*
+ * void append
+ * @description: appends a new node to the end of a list
+ * @param newEntry: node item to be entered
+ * @param root: head of list newEntry will be added to
+ * @modifys: adds an symbolEntry
+ * @returns: none
+ */
+void append(symbolEntry *newEntry, symbolEntry *head)
+{
+    symbolEntry *pCurrent = head;
+    while(pCurrent->next != NULL){
+      pCurrent = pCurrent->next;
+      }
+      pCurrent->next = newEntry;
+}
+/*
+ * woid removeSymbol
+ * @description: removes node from the list if name and symbol type match node
+ * to be removed values
+ * @param piped: node that needs to be removed
+ * @param root: head of list
+ * @modifys: removes item from list
+ * @returns: none
+ */
+void removeSymbol(symbolEntry *toBeRemoved, symbolEntry *root) {
+    struct symbolEntry *temp, *prev;
+    temp = root;
+    prev = root;
+    while(temp != NULL) {
+        char x1 = toBeRemoved->type;
+        char *n1 = toBeRemoved->name;
+        char x2 = temp->type;
+        char *n2 = temp->name;
+        if((temp->type == toBeRemoved->type) && (strcmp(temp->name, toBeRemoved->name)== 0)) {
+            if(temp == root) {
+                    root = temp->next;
+                    temp = NULL;
+            } else {
+                prev->next = temp->next;
+                temp = NULL;
+            }
+        } else {
+            prev = temp;
+            temp = temp->next;
+        }
+    }
+}
+/*
+ * char getSymbolType
+ * @description: get the symbol type associated with a symbol name
+ * @param name: name of symbol type we are searching
+ * @param head: head of the list we are searching in
+ * @modifys: none
+ * @returns: the type of the symbol we are searching
+ */
+char getSymbolType(char name[31], symbolEntry *head) {
+    struct symbolEntry *root;
+    root = head;
+    while (root != NULL) {
+        if(strcmp(root->name,name) == 0) {
+            return root->type;
+        } else {
+            root = root->next;
+        }
+    }
+    return '?'; // means it did not work
+}
+/*
+ * void updateSymbolType
+ * @description: updates the type of a symbol
+ * @param name: the name of the symbol to be updated
+ * @param head: the head of the list to be searched
+ * @param updateType: the new type of the symbol
+ * @modifys: changes the symbol type
+ * @returns: none
+ */
+void updateSymbolType(char name[31], symbolEntry *head, char updateType) {
+    struct symbolEntry *root;
+    root = head;
+    while(root != NULL) {
+        if (strcmp(root->name, name) == 0) {
+            root->type = updateType;
+            break;
+        } else if (root->next == NULL){
+            break;
+        } else {
+            root = root->next;
+        }
+    }
+}
+
+//import stdbool!!
+bool contains(char name[31], symbolEntry *head) {
+    struct symbolEntry *root;
+    root = head;
+    while (root != NULL) {
+        if(strcmp(root->name,name) == 0) {
+            return true;
+        } else {
+            root = root->next;
+        }
+    }
+    return false; // means it did not work
+}
+
+
+/*
+ * void print
+ * @description: prints the list
+ * @param head: the head of the list to be printed
+ * @modifys: none
+ * @returns: technically none, but gives everything in the list
+ */
+void  printList(symbolEntry *head)
+{
+    if(head == NULL) {
+        return;
+    }
+    while(head != NULL) {
+        printf("%c   %s\n", head->type, head->name);
+        if(head->next == NULL) {
+            break;
+        } else {
+            head = head->next;
+        }
+    }
+    printf("\n");
+}
+/*
+ * int count
+ * @description: counts the number of elements in a list
+ * @param head: the beginning of the list
+ * @modifys: none
+ * @returns: the count
+ */
+int count(symbolEntry *head) {
+    symbolEntry *pCurrent = head;
+    int count = 0;
+    while( pCurrent != NULL) {
+        pCurrent = pCurrent->next;
+        count++;
+    }
+    return count;
+}
+
+void test()
+{
+    printf("test\n");
+}
+
+void removeSymbolHelper(char *name, symbolEntry *root) {
+    struct symbolEntry *temp, *prev;
+    temp = root;
+    prev = root;
+    while (temp != NULL) {
+        char *matchName = temp->name;
+        if (strcmp(matchName, name) == 0) {
+            removeSymbol(temp, root);
+            break;
+        }
+        temp = temp->next;
+    } 
+}
