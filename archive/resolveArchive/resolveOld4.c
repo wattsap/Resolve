@@ -28,20 +28,7 @@
 #include <string.h>
 #include "bool.h"
 #include "symbolList.h"
-
-#define BUFF_SIZE 80
-#define MAX_NAME_SIZE 31
-
-static bool isArchive(char * filename);
-static bool isObjectFile(char * filename);
-static void handleObjectFile(char * filename);
-static void handleArchive(char * filename);
-static void displayMessageAndExit(char *message);
-static void evaluateLine(char *theLine);
-static void addToDList(symbolEntry* newEntry);
-static void addToUList(symbolEntry* newEntry);
-static void readFile(char *filename);
-static symbolEntry getNewSymbolEntry();
+#include "resolve.h"
 
 symbolEntry *uHead;
 symbolEntry *dHead;
@@ -75,31 +62,14 @@ int main(int argc, char * argv[])
       printf("%s: file not found\n", argv[i]);
     }
   }
-  if(!contains("main",dHead))
-  {
-    printf(": undefined reference to main\n" );
-  }
   if(uHead != NULL)
   {
-    symbolEntry* temp = uHead;
-    while(temp != NULL)
-    {
-      printf(": undefined reference to %s\n", temp->name);
-      temp = temp->next;
-    }
-    //printing ascii values to see if dloop contains spaces or new lines
-    /*
-    int loopvar;
-    symbolEntry *dHeadLoop = dHead;
-    while(dHeadLoop != NULL) {
-      printf("Char: %s\n", dHeadLoop->name);
-      for (loopvar = 0; loopvar < strlen(dHeadLoop->name); loopvar++){
-        printf(" ascii: %d", dHeadLoop->name[loopvar]);
-      }
-      printf("\n");
-      dHeadLoop = dHeadLoop->next;
-    }
-    */
+  symbolEntry* temp = uHead;
+  while(temp != NULL)
+  {
+    printf(": undefined reference to %s\n", temp->name);
+    temp = temp->next;
+  }
   }
 }
 
@@ -154,7 +124,7 @@ bool isObjectFile(char * filename)
 /*
 * function: evaluateFile
 * description: reads through an archive file line by line and evaluates each
-*		line using
+*   line using
 * input: the name of the archive file.
 */
 void readFile(char *filename)
@@ -180,44 +150,21 @@ void readFile(char *filename)
 */
 void evaluateLine(char *theLine)
 {
-  int index = 0;
-  int spaceNum = 0;
-  int typeLocation;
-
-  if(theLine[index] == ' ')
-  {
-    while(theLine[index] == ' ')
-    {
-      index++;
-    }
-    typeLocation = index;
-  }
-  else
-  {
-    while(theLine[index] != ' ')
-    {
-      index++;
-    }
-    typeLocation = index + 1;
-  }
   symbolEntry *newEntry = (symbolEntry*)malloc(sizeof(symbolEntry));
-  (*newEntry).type = theLine[typeLocation];
+  (*newEntry).type = theLine[TYPE_LOCATION];
   char name[MAX_NAME_SIZE];
-  memcpy(name, &theLine[(typeLocation + 2)], (MAX_NAME_SIZE - 1));
-  strncpy((*newEntry).name, name,(strlen(name) - 1));
+  memcpy(name, &theLine[(TYPE_LOCATION + 2)], (MAX_NAME_SIZE - 1));
+  strncpy((*newEntry).name, name, (strlen(name) - 1));
   (*newEntry).next = NULL;
-  if(newEntry->type == 't' || newEntry->type == 'T' || newEntry->type == 'd' ||	newEntry->type == 'D')
+  if(newEntry->type == 't' || newEntry->type == 'T' || newEntry->type == 'd' || newEntry->type == 'D')
   {
-    addToDList(newEntry);
-    printf("d list so far: \n");
-    printList(dHead);
+  addToDList(newEntry);
   }
   else if(newEntry->type == 'U')
   {
-    addToUList(newEntry);
-    printf("u list so far: \n");
-    printList(dHead);
+  addToUList(newEntry);
   }
+  
 }
 
 void addToDList(symbolEntry *newEntry)
@@ -234,7 +181,7 @@ void addToDList(symbolEntry *newEntry)
   {
     if (contains(newEntry->name,uHead))
     {
-      removeSymbolByName(newEntry->name,uHead);
+      removeSymbolHelper(newEntry->name,uHead);
     }
     append(newEntry, dHead);
   }

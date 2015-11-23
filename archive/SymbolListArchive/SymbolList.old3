@@ -1,3 +1,5 @@
+
+
 /*/////////////////////////////////////////////////////////////////////////////////////////////
  * SymbolList.c
  * Ben Crawford and Andrew Watts
@@ -37,13 +39,22 @@ symbolEntry dRoot;
  * @modifys: adds an symbolEntry
  * @returns: none
  */
-void append(symbolEntry *newEntry, symbolEntry *head)
-{
+void append(symbolEntry *newEntry, symbolEntry *head){
+  printf("newEntry: %c %s\n",(*newEntry).type, (*newEntry).name);
+  if(head == NULL)
+  {
+    head = newEntry;
+    printf("head: %c %s\n",(*head).type,(*head).name);
+  }
+  else
+  {
+    printf("inside reached\n");
     symbolEntry *pCurrent = head;
     while(pCurrent->next != NULL){
       pCurrent = pCurrent->next;
       }
       pCurrent->next = newEntry;
+  }
 }
 /*
  * woid removeSymbol
@@ -54,19 +65,22 @@ void append(symbolEntry *newEntry, symbolEntry *head)
  * @modifys: removes item from list
  * @returns: none
  */
- /*
 void removeSymbol(symbolEntry *toBeRemoved, symbolEntry *root) {
     struct symbolEntry *temp, *prev;
     temp = root;
     prev = root;
     while(temp != NULL) {
+        char x1 = toBeRemoved->type;
+        char *n1 = toBeRemoved->name;
+        char x2 = temp->type;
+        char *n2 = temp->name;
         if((temp->type == toBeRemoved->type) && (strcmp(temp->name, toBeRemoved->name)== 0)) {
             if(temp == root) {
                     root = temp->next;
-                    //temp = NULL;
+                    temp = NULL;
             } else {
                 prev->next = temp->next;
-                //temp = NULL;
+                temp = NULL;
             }
         } else {
             prev = temp;
@@ -74,23 +88,19 @@ void removeSymbol(symbolEntry *toBeRemoved, symbolEntry *root) {
         }
     }
 }
-*/
-void removeSymbol(symbolEntry *toBeRemoved, symbolEntry *root) {
-    if(toBeRemoved->type == root->type && strcmp(toBeRemoved->name, root->name) == 0) {
-        root = root->next;
-    } else {
-        struct symbolEntry *temp, *prev;
-        temp = root;
-        prev = root;
-        while (temp != NULL) {
-            if (temp->type == toBeRemoved->type && strcmp(temp->name, toBeRemoved->name) == 0) {
-                prev->next = prev->next->next;
-                break;
-            }
-                prev = temp;
-                temp = temp->next;
+
+void removeSymbolHelper(char *name, symbolEntry *root) {
+    struct symbolEntry *temp, *prev;
+    temp = root;
+    prev = root;
+    while (temp != NULL) {
+        char *x1 = temp->name;
+        if (strcmp(x1, name) == 0) {
+            removeSymbol(temp, root);
+            break;
         }
-    }
+        temp = temp -> next;
+    } 
 }
 /*
  * char getSymbolType
@@ -150,18 +160,6 @@ bool contains(char name[31], symbolEntry *head) {
     return false; // means it did not work
 }
 
-bool contains2(char *name, symbolEntry *head) {
-    struct symbolEntry *root;
-    root = head;
-    while (root != NULL) {
-        if (strcmp(root->name,name) == 0) {
-            return true;
-        } else { 
-            root = root->next;
-        }
-    }
-}
-
 
 /*
  * void print
@@ -206,113 +204,3 @@ void test()
 {
     printf("test\n");
 }
-
-void removeSymbolByName(char *name, symbolEntry *root) {
-    struct symbolEntry *temp;
-    temp = root;
-    while (temp != NULL) {
-        if (strcmp(temp->name, name) == 0) {
-            removeSymbol(temp, root);
-            break;
-        }
-        temp = temp->next;
-    } 
-}
-
-bool compareSymbols(symbolEntry *a, symbolEntry *b) {
-    return (a->type == b->type && strcmp(a->name, b->name) == 0);
-}
-
-/*
-int  main()
-{
-    symbolEntry head, entry1, entry2, entry3;
-    
-    strcpy(head.name,"func0");
-    strcpy(entry1.name, "func1");
-    strcpy(entry2.name, "func2");
-    strcpy(entry3.name, "func3");
-    
-    head.type = 'T';
-    entry1.type = 'U';
-    entry2.type = 'D';
-    entry3.type = 't';
-    
-    head.next = NULL;
-    entry1.next = NULL;
-    entry2.next = NULL;
-    entry3.next = NULL;
-    
-    symbolEntry *pHead = &head;
-    symbolEntry *pEntry1 = &entry1;
-    symbolEntry *pEntry2 = &entry2;
-    symbolEntry *pEntry3 = &entry3;
-    
-    //printf("count before add: %d\n", size);
-    append(pEntry1, pHead);
-    int sizeBeforeContains = count(pHead);
-    printf("count before contains: %d\n", sizeBeforeContains);
-    if (contains2("func1", pHead)) {
-        printf("success\n");
-    }
-    if (contains("func1", pHead)){
-        printf("true\n");
-        printf("%d\n", count(pHead));
-    }
-    if (!contains("hello", pHead)) {
-        printf("right\n");
-    }
-    /*
-    if (!contains("hello world", pHead)) {
-        printf("right again\n");
-    }
-    if (contains2("func3", pHead)) {
-        printf("true\n");
-    }
-    
-    int size = count(pHead);
-    printf("size: %d\n, size");
-
-    
-    append(pEntry2, pHead);
-    append(pEntry3, pHead);
-    printf("test\n");
-    size = count(pHead);
-    printf("count after add: %d\n", size);
-
-    print(pHead);
-    
-    char theType = getSymbolType(entry2.name, pHead);
-    printf("entry2 type: %c\n", theType);
-    
-    
-    printf("updating symbol type...\n");
-    char newType = 'T';
-    updateSymbolType(entry2.name, pHead, newType);
-    char def = getSymbolType(entry2.name, pHead);
-    printf("entry2 type after update: %c\n", def);
-    
-    print(pHead);
-    printf("pEntry2->type: %c\n", pEntry2->type);
-    
-    
-    
-    printf("removing symbol foo()...\n");
-    removeSymbol(pEntry2, pHead);
-    int newCount = count(pHead);
-    printf("count after remove: %d\n", newCount);
-    
-    printf("list after remove: \n");
-    print(pHead);
-
-    printf("\n\n");
-    char *nombre = head.name;
-    bool didContain = contains(nombre, pHead);
-    if(didContain){
-        printf("contains: %s\n", nombre);
-    } else {
-        printf("does not contain: %s\n", nombre);
-    }
-    return 0;
-}
-*/

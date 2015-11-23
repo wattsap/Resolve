@@ -28,5 +28,7 @@ void updateSymbolType(char name[31], symbolEntry *head, char updateType);
 
 int count(symbolEntry *head);
 
+void removeSymbolByName(char *name, symbolEntry *root);
+
 void test();
 #endif

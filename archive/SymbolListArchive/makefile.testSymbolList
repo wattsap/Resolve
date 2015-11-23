@@ -1,0 +1,15 @@
+CC=gcc -lm
+OBJ= testSymbolList.o SymbolList.o
+
+testing: testSymbolList.o SymbolList.o
+	gcc -lm testSymbolList.o SymbolList.o -o testing
+
+testSymbolList.o: testSymbolList.c
+	gcc -c testSymbolList.c
+
+SymbolList.o: SymbolList.c symbolList.h
+	gcc -c SymbolList.c
+
+clean:
+	rm -f *.o
+

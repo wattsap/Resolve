@@ -1,0 +1,213 @@
+/*/////////////////////////////////////////////////////////////////////////////////////////////
+ * SymbolList.c
+ * Ben Crawford and Andrew Watts
+ * Version: 0.1
+ * Description: basic methods for manilpulations of a linked list of symbol entries from the 
+ * nm pipe command 
+ * References: 
+ * - http://www.cprogramming.com/snippets/source-code/singly-linked-list-insert-remove-add-count
+ *      -used to learn basic c linked list setup
+ */////////////////////////////////////////////////////////////////////////////////////////////
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include "SymbolList.h"
+ //TODO: remove the comments on this
+//used for testing
+//TODO: remove this struct from the file
+
+/*
+ * these are the two fields taken from the nm pipe to get symbol name and type
+ */
+char* pulledName;
+char pulledSymbol;
+/*
+ * these are the the two roots for the two linked lists:
+ * -undefined symbols
+ * -defined symbols
+ */
+symbolEntry uRoot;
+symbolEntry dRoot;
+/*
+ * void append
+ * @description: appends a new node to the end of a list
+ * @param newEntry: node item to be entered
+ * @param root: head of list newEntry will be added to
+ * @modifys: adds an symbolEntry
+ * @returns: none
+ */
+void append(symbolEntry *newEntry, symbolEntry *root) {
+    struct symbolEntry *temp,*right;
+    symbolEntry froot, ftemp;
+    temp = &ftemp;
+    temp = malloc(sizeof(symbolEntry));
+    temp->type = newEntry->type;
+    strcpy(temp->name, newEntry->name);
+    right = root;
+    if (right->next == NULL){
+        right->next = temp;
+    } else {
+        while(right->next != NULL) {
+            /*
+            right = right->next;
+            right->next = temp;
+            right = temp;
+            right->next = NULL;
+            */
+            right = right->next;
+        }
+        right->next = temp;
+    }
+}
+/*
+ * woid removeSymbol
+ * @description: removes node from the list if name and symbol type match node
+ * to be removed values
+ * @param piped: node that needs to be removed
+ * @param root: head of list
+ * @modifys: removes item from list
+ * @returns: none
+ */
+void removeSymbol(symbolEntry *toBeRemoved, symbolEntry *root) {
+    struct symbolEntry *temp, *prev;
+    symbolEntry rprev;
+    prev = &rprev;
+    temp = root;
+    while(temp != NULL) {
+        int q = strcmp(temp->name, toBeRemoved->name) == 0;
+        int p =  (temp->type == toBeRemoved->type);
+        printf("first: %d\n second: %d\n", p, q);
+        if((temp->type == toBeRemoved->type) && (strcmp(temp->name, toBeRemoved->name)== 0)) {
+            printf("they same\n");
+            if(temp == root) {
+                    root = temp->next;
+                    temp->next = NULL;
+            } else {
+                prev->next = temp->next;
+                temp->next = NULL;
+            }
+        } else {
+            prev = temp;
+            temp = temp->next;
+        }
+    }
+}
+/*
+ * char getSymbolType
+ * @description: get the symbol type associated with a symbol name
+ * @param name: name of symbol type we are searching
+ * @param head: head of the list we are searching in
+ * @modifys: none
+ * @returns: the type of the symbol we are searching
+ */
+char getSymbolType(char name[31], symbolEntry *head) {
+    struct symbolEntry *root;
+    root = head;
+    while (root != NULL) {
+        if(strcmp(root->name,name) == 0) {
+            return root->type;
+        } else {
+            root = root->next;
+        }
+    }
+    return '?'; // means it did not work
+}
+/*
+ * void updateSymbolType
+ * @description: updates the type of a symbol
+ * @param name: the name of the symbol to be updated
+ * @param head: the head of the list to be searched
+ * @param updateType: the new type of the symbol
+ * @modifys: changes the symbol type
+ * @returns: none
+ */
+void updateSymbolType(char name[31], symbolEntry *head, char updateType) {
+    struct symbolEntry *root;
+    root = head;
+    while(root != NULL) {
+        if (strcmp(root->name, name) == 0) {
+            root->type = updateType;
+            break;
+        } else if (root->next == NULL){
+            printf("reached end of list, no symbol stored by that name\n");
+            break;
+        } else {
+            root = root->next;
+        }
+    }
+}
+/*
+ * void print
+ * @description: prints the list
+ * @param head: the head of the list to be printed
+ * @modifys: none
+ * @returns: technically none, but gives everything in the list
+ */
+void  print(symbolEntry *head)
+{
+    if(head == NULL) {
+        return;
+    }
+    while(head != NULL) {
+        printf("%c   %s\n", head->type, head->name);
+        if(head->next == NULL) {
+            break;
+        } else {
+            head = head->next;
+        }
+    }
+    printf("\n");
+}
+/*
+ * int count
+ * @description: counts the number of elements in a list
+ * @param head: the beginning of the list
+ * @modifys: none
+ * @returns: the count
+ */
+int count(symbolEntry *head) {
+    struct symbolEntry *n;
+    int count = 0;
+    n = head;
+    while( n != NULL) {
+        n = n->next;
+        count++;
+    }
+    return count;
+}
+
+//for testing only remove as needed
+int  main()
+{
+    struct symbolEntry *root, *entry;
+    symbolEntry froot, fentry;
+    root = &froot;
+    entry = &fentry;
+    root->next = NULL;
+    entry->type = 'T';
+    strcpy(entry->name, "foo()");
+    root->type = 'U';
+    strcpy(root->name, "goo()");
+    int c1 = count(root);
+    printf("count before add: %d\n", c1);
+    printf("list before add: \n");
+    append(entry, root);
+    int n = count(root);
+    printf("count after add: %d\n", n);
+    printf("list after add: \n");
+    print(root);
+    char c = getSymbolType(entry->name, root);
+    printf("entry symbol type: %c\n", c);
+    printf("updating symbol type...\n");
+    char e = 'D';
+    updateSymbolType(entry->name, root, e);
+    char def = getSymbolType(entry->name, root);
+    printf("entry symbol type after update: %c\n", def);
+    printf("removing symbol foo()...\n");
+    removeSymbol(entry, root);
+    int ceu = count(root);
+    printf("count after remove: %d\n", ceu);
+    printf("list after remove: \n");
+    print(root);
+    return 0;
+}
